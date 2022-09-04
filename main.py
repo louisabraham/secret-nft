@@ -45,7 +45,7 @@ def ecies_check(xA, xR, m1, xB, r):
     return xR == curve25519(r) and curve25519(m1 ^ keccak256(mult(r, xA))) == xB
 
 
-class Public:
+class Namespace:
     pass
 
 
@@ -61,8 +61,9 @@ if __name__ == "__main__":
 
     # Alice wants to send a private key `m` associated with the public key `M` to Bob.
     # She has a private key `a` and a public key `xA`
-    Alice = Public()
-    Bob = Public()
+    Public = Namespace()
+    Alice = Namespace()
+    Bob = Namespace()
 
     Alice.m = make_secret()
     Public.M = curve25519(Alice.m, include_y=True)
