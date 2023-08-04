@@ -1,23 +1,22 @@
 # Secret NFT
 
-The goal of this repository is to be able to provably share secrets in presence of an arbitrator.
+The goal of this repository is to provably share secrets in presence of an arbitrator.
 
-We implement two protocols in the form of Ethereum smart contracts.
+We implement two protocols as Python code and Solidity smart contracts, allowing the arbitrator to be anyone with a Python interpreter or the Ethereum blockchain.
 
 In both cases, A(lice) wants to share a `secret` with B(ob).
 
-
 The protocols are explained in [this blog post](https://louisabraham.github.io/articles/secret-nft/).
 
-|                                   | ECC protocol                                           | ZK protocol                                                  |
-| --------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
-| `fingerprint`                     | curve25519(`secret`)                                   | `SHA256(secret)` or `keccak(secret)`                         |
-| Elliptic Curve                    | [Curve25519](https://en.wikipedia.org/wiki/Curve25519) | [Baby Jubjub](https://eips.ethereum.org/EIPS/eip-2494)       |
-| Need of a trusted setup           | No                                                     | [Yes](https://zokrates.github.io/toolbox/trusted_setup.html) |
-| Need for client-side verification | Yes                                                    | No                                                           |
-| Number of messages                | 3 (A B A) when there is no cheating                    | 2 (B A)                                                      |
-| Gas consumption                   | 1.5M                                                   | 900k                                                         |
-| Dependencies                      | None                                                   | ZoKrates                                                     |
+|                                   | ECC protocol                                           | ZK protocol                                                                            |
+| --------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------- |
+| `fingerprint`                     | `curve25519(secret)`                                   | `SHA256(secret)` or `keccak(secret)` (could also easily support `babyjubjub(secret)` ) |
+| Elliptic Curve                    | [Curve25519](https://en.wikipedia.org/wiki/Curve25519) | [Baby Jubjub](https://eips.ethereum.org/EIPS/eip-2494)                                 |
+| Need of a trusted setup           | No                                                     | [Yes](https://zokrates.github.io/toolbox/trusted_setup.html)                           |
+| Need for client-side verification | Yes                                                    | No                                                                                     |
+| Number of messages                | 3 (Alice Bob Alice) when there is no cheating          | 2 (Bob Alice)                                                                          |
+| Gas consumption                   | 1.5M                                                   | 900k                                                                                   |
+| Dependencies                      | None                                                   | ZoKrates                                                                               |
 
 ## Usage
 
