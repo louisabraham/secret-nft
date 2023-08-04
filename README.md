@@ -6,7 +6,7 @@ We implement two protocols as Python code and Solidity smart contracts, allowing
 
 In both cases, A(lice) wants to share a `secret` with B(ob).
 
-The protocols are explained in [this blog post](https://louisabraham.github.io/articles/verifiable-encryption-blockchain/).
+The protocols are explained in [this blog post](https://louisabraham.github.io/articles/verifiable-encryption-blockchain).
 
 |                                   | ECC protocol                                           | ZK protocol                                                                            |
 | --------------------------------- | ------------------------------------------------------ | -------------------------------------------------------------------------------------- |
