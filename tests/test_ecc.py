@@ -48,8 +48,8 @@ def test():
 
     # Bob sends `b` securely to Alice using ECIES
     # https://en.wikipedia.org/wiki/Integrated_Encryption_Scheme
-    Bob.seed = make_secret()
-    Public.m1 = ecies_encrypt(Bob.b, Bob.seed, Public.xA)
+    Bob.salt = make_secret()
+    Public.m1 = ecies_encrypt(Bob.b, Bob.salt, Public.xA)
 
     tx = escrow.bob(Public.B, *Public.m1, {"from": bob, "value": amount})
     print("Bob used", tx.gas_used)
@@ -62,9 +62,9 @@ def test():
     assert curve25519(Alice.b) == Public.xB, "A claims the value is false"
 
     # If Alice claims that the value is false, Bob can make r public
-    Public.seed = Bob.seed
-    assert ecies_check(Public.xA, Public.m1, Public.xB, Public.seed)
-    del Public.seed
+    Public.salt = Bob.salt
+    assert ecies_check(Public.xA, Public.m1, Public.xB, Public.salt)
+    del Public.salt
 
     # Alice publishes m2
     Public.m2 = (Alice.m + Alice.b) % ORDER

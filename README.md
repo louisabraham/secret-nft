@@ -1,6 +1,6 @@
 # Secret NFT
 
-The goal of this repository is to provably share secrets in presence of an arbitrator.
+The goal of this repository is to experiment with verifiable encryption: provably share secrets in presence of an arbitrator.
 
 We implement two protocols as Python code and Solidity smart contracts, allowing the arbitrator to be anyone with a Python interpreter or the Ethereum blockchain.
 
