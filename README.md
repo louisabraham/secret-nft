@@ -44,7 +44,7 @@ pytest -s
 
 ## Note
 
-We did not implement the protocol that allows Alice to claim Bob cheated in their first message.
+We did not implement the endpoints that allow Alice to claim Bob cheated in their message of the ECC protocol.
 The verification is however simple to implement in Solidity by reproducing the `ecies_check` function.
 
 A practical use does not necessarily require it as Bob could be allowed to claim back their funds after some time.
