@@ -27,7 +27,6 @@ def _test_zk(use_keccak):
     Alice.secret = random.randrange(2**256)
     Public.fingerprint = hash(Alice.secret)
 
-    # Bob
     Bob.private_key = PrivateKey.from_rand()
     Public.public_key = PublicKey.from_private(Bob.private_key)
 
