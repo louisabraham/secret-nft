@@ -61,7 +61,7 @@ def test():
     Alice.b = ecies_decrypt(Public.m1, Alice.a)
     assert curve25519(Alice.b) == Public.xB, "A claims the value is false"
 
-    # If Alice claims that the value is false, Bob can make r public
+    # If Alice claims that the value is false, Bob can make `salt`` public
     Public.salt = Bob.salt
     assert ecies_check(Public.xA, Public.m1, Public.xB, Public.salt)
     del Public.salt
