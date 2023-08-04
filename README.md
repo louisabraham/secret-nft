@@ -16,7 +16,7 @@ The protocols are explained in [this blog post](https://louisabraham.github.io/a
 | Need for client-side verification | Yes                                                    | No                                                                                     |
 | Number of messages                | 3 (Alice Bob Alice) when there is no cheating          | 2 (Bob Alice)                                                                          |
 | Gas consumption                   | 1.5M                                                   | 1.4M + 900k per use                                                                    |
-| Dependencies                      | None                                                   | ZoKrates                                                                               |
+| Dependencies                      | None                                                   | [ZoKrates](https://zokrates.github.io/)                                                |
 
 ## Usage
 
