@@ -1,56 +1,18 @@
-from random import randrange
-from Crypto.Hash import keccak
+from brownie import accounts, eccEscrow
 
-from curve25519 import valid, ORDER, add, mult, curve25519
-
-
-def make_secret():
-    # https://cr.yp.to/ecdh.html
-    return randrange(2 ** 251, 2 ** 252) << 3
-
-
-def normalize_secret(x):
-    """
-    Finds the "normalized" secret key, as in the output of make_secret
-    associated to a number modulo ORDER
-
-    Simply solves the system:
-    0 <= k < 2^251
-    output = 8 * (2^251 + k)
-    x = output % ORDER
-    """
-    inv8 = pow(8, ORDER - 2, ORDER)
-    k = (x * inv8 % ORDER - 2 ** 251) % ORDER
-    bit = 1 << 251
-    # the key space has only 2^252 keys and is slightly smaller than ORDER
-    assert not bit & k
-    return (bit | k) << 3
+from secret_nft.curve25519 import (
+    ORDER,
+    add,
+    curve25519,
+    make_secret,
+    normalize_secret,
+    valid,
+)
+from secret_nft.ecc import ecies_check, ecies_decrypt, ecies_encrypt
+from secret_nft.utils import Namespace
 
 
-def keccak256(x):
-    k = keccak.new(digest_bits=256)
-    k.update(x.to_bytes(32, "big"))
-    return int.from_bytes(k.digest(), "big")
-
-
-def ecies_encrypt(b, r, xA):
-    return b ^ keccak256(mult(r, xA))
-
-
-def ecies_decrypt(m1, xR, a):
-    return m1 ^ keccak256(mult(a, xR))
-
-
-def ecies_check(xA, xR, m1, xB, r):
-    return xR == curve25519(r) and curve25519(m1 ^ keccak256(mult(r, xA))) == xB
-
-
-class Namespace:
-    pass
-
-
-if __name__ == "__main__":
-
+def test():
     # We use `Curve25519` with generator `G`.
     # Capital letters (eg `A`) denote multiplications of `G`
     # by the associated lowercase letter (eg `a G`).
@@ -61,9 +23,11 @@ if __name__ == "__main__":
 
     # Alice wants to send a private key `m` associated with the public key `M` to Bob.
     # She has a private key `a` and a public key `xA`
+
     Public = Namespace()
     Alice = Namespace()
     Bob = Namespace()
+    total_gas = 0
 
     Alice.m = make_secret()
     Public.M = curve25519(Alice.m, include_y=True)
@@ -71,29 +35,43 @@ if __name__ == "__main__":
     Alice.a = make_secret()
     Public.xA = curve25519(Alice.a)
 
+    alice = accounts[0]
+    bob = accounts[1]
+    amount = "10 ether"
+    escrow = eccEscrow.deploy(Public.M, Public.xA, bob, amount, {"from": alice})
+    print("Deployment used", escrow.tx.gas_used)
+    total_gas += escrow.tx.gas_used
+
     # Bob generates a secret `b` and publishes `B`.
     Bob.b = make_secret()
     Public.B = Public.xB, _ = curve25519(Bob.b, include_y=True)
 
     # Bob sends `b` securely to Alice using ECIES
     # https://en.wikipedia.org/wiki/Integrated_Encryption_Scheme
-    Bob.r = make_secret()
-    Public.xR = curve25519(Bob.r)
-    Public.m1 = ecies_encrypt(Bob.b, Bob.r, Public.xA)
+    Bob.seed = make_secret()
+    Public.m1 = ecies_encrypt(Bob.b, Bob.seed, Public.xA)
+
+    tx = escrow.bob(Public.B, *Public.m1, {"from": bob, "value": amount})
+    print("Bob used", tx.gas_used)
+    total_gas += tx.gas_used
 
     # Alice checks that `B` is valid
     assert valid(*Public.B)
     # Alice decrypts `b` and checks that it corresponds to B
-    Alice.b = ecies_decrypt(Public.m1, Public.xR, Alice.a)
+    Alice.b = ecies_decrypt(Public.m1, Alice.a)
     assert curve25519(Alice.b) == Public.xB, "A claims the value is false"
 
     # If Alice claims that the value is false, Bob can make r public
-    Public.r = Bob.r
-    assert ecies_check(Public.xA, Public.xR, Public.m1, Public.xB, Public.r)
-    del Public.r
+    Public.seed = Bob.seed
+    assert ecies_check(Public.xA, Public.m1, Public.xB, Public.seed)
+    del Public.seed
 
     # Alice publishes m2
     Public.m2 = (Alice.m + Alice.b) % ORDER
+
+    tx = escrow.alice(Public.m2, {"from": alice})
+    print("Alice used", tx.gas_used)
+    total_gas += tx.gas_used
 
     Bob.m = normalize_secret(Public.m2 - Bob.b)
 
@@ -101,3 +79,5 @@ if __name__ == "__main__":
     assert Bob.m == Alice.m
     # Anyone can see that m was sent to Bob
     assert curve25519(Public.m2, include_y=True) == add(Public.M, Public.B)
+
+    print("Total gas used", total_gas)

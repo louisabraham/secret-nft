@@ -1,0 +1,2 @@
+eth-brownie
+git+https://github.com/Zokrates/pycrypto

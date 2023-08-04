@@ -1,0 +1,12 @@
+import "../template" as aux;
+
+def main(
+    private field salt,
+    u32[8] fingerprint,
+    field[2] public_key,
+    u32[8] msg,
+    field[2] public_salt
+    ) {
+    
+    return aux::<1>(salt, fingerprint, public_key, msg, public_salt);
+}

@@ -1,0 +1,63 @@
+from "hashes/sha256/sha256Padded" import sha256Padded;
+import "hashes/keccak/256bit" as keccak256;
+from "ecc/babyjubjubParams" import BABYJUBJUB_PARAMS;
+import "ecc/edwardsScalarMult" as mult;
+import "ecc/edwardsCompress" as compress;
+import "utils/pack/bool/nonStrictUnpack256" as unpack256;
+import "utils/casts/u32_8_to_bool_256";
+import "utils/casts/u8_from_bits";
+import "utils/casts/u8_to_bits";
+import "utils/casts/u32_from_bits";
+
+
+
+const field[2] generator = [BABYJUBJUB_PARAMS.Gu, BABYJUBJUB_PARAMS.Gv];
+
+def keccak(bool[256] x) -> u32[8] {
+    u8[32] mut x8 = [0; 32];
+    for u32 i in 0..32 {
+        x8[i] = u8_from_bits(x[i * 8 .. i * 8 + 8]);
+    }
+    u8[32] mut y8 = keccak256(x8);
+    bool[256] mut y = [false; 256];
+    for u32 i in 0..32 {
+        bool[8] mut tmp = u8_to_bits(y8[i]);
+        for u32 j in 0..8 {
+            y[i * 8 + j] = tmp[j];
+        }
+    }
+    u32[8] mut y32 = [0; 8];
+    for u32 i in 0..8 {
+        y32[i] = u32_from_bits(y[i * 32 .. i * 32 + 32]);
+    }
+
+    return y32;
+}
+
+
+def main<use_keccak>(
+    field salt,
+    u32[8] fingerprint,
+    field[2] public_key,
+    u32[8] msg,
+    field[2] public_salt
+    ) {
+    
+    bool[256] saltbin = unpack256(salt);
+    assert(mult(saltbin, generator, BABYJUBJUB_PARAMS) == public_salt);
+
+    bool[256] tmp = compress(mult(saltbin, public_key, BABYJUBJUB_PARAMS));
+    u32[8] mask = if (use_keccak != 0) {keccak(tmp)} else {sha256Padded(tmp)};
+
+    u32[8] mut secret32 = [0; 8];
+    for u32 i in 0..8 {
+        secret32[i] = msg[i] ^ mask[i];
+    }
+    bool[256] secret = u32_8_to_bool_256(secret32);
+
+    u32[8] hash = if (use_keccak != 0) {keccak(secret)} else {sha256Padded(secret)};
+    assert(hash == fingerprint);
+
+    return;
+}
+

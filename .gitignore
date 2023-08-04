@@ -1,1 +1,16 @@
-__pycache__/
+__pycache__
+.env
+.history
+.hypothesis/
+build/
+reports/
+.DS_Store
+zokrates/**/abi.json
+zokrates/**/out
+zokrates/**/out.r1cs
+zokrates/**/out.wtns
+zokrates/**/proof.json
+zokrates/**/proving.key
+zokrates/**/verification.key
+zokrates/**/verifier.sol
+zokrates/**/witness

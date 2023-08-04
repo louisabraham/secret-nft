@@ -1,9 +1,11 @@
+from random import randrange
+
 MOD = (1 << 255) - 19
-ORDER = 2 ** 252 + 27742317777372353535851937790883648493
+ORDER = 2**252 + 27742317777372353535851937790883648493
 
 
 def valid(x, y):
-    return y ** 2 % MOD == x * (1 + 486662 * x + (x * x % MOD)) % MOD
+    return y**2 % MOD == x * (1 + 486662 * x + (x * x % MOD)) % MOD
 
 
 def scale(x, z):
@@ -28,9 +30,9 @@ def double_add(p2, p3, X1=9):
     a24 = (a + 2) // 4  # careful, a24 != (a - 2) // 4
 
     A = X2 + Z2
-    AA = A ** 2 % MOD
+    AA = A**2 % MOD
     B = X2 - Z2
-    BB = B ** 2 % MOD
+    BB = B**2 % MOD
     E = AA - BB
     C = X3 + Z3
     D = X3 - Z3
@@ -59,7 +61,7 @@ def add(p1, p2):
 def double(X1):
     """compute (X1 : 1) + (X1 : 1)"""
     a = 486662
-    XX1 = X1 ** 2 % MOD
+    XX1 = X1**2 % MOD
     X3 = (XX1 - 1) ** 2
     Z3 = 4 * X1 * (XX1 + a * X1 + 1)
     return X3, Z3
@@ -87,7 +89,7 @@ def recover(Q, S):
         - x coordinates of P, Q, S := P+Q
         - y coordinate of P
 
-    we only implemented the case P = (9 : 1)
+    We only implemented the case P = (9 : 1)
     """
     XQ, ZQ = Q
     XS, ZS = S
@@ -98,7 +100,7 @@ def recover(Q, S):
     v1 = xP * ZQ % MOD
     v2 = XQ + v1
     v3 = XQ - v1
-    v3 = v3 ** 2 % MOD
+    v3 = v3**2 % MOD
     v3 = v3 * XS % MOD
     v1 = 2 * A * ZQ % MOD
     v2 = v2 + v1
@@ -122,7 +124,7 @@ def curve25519(k, *, include_y=False):
     """
     Compute k * P with P the base point.
 
-    https://eprint.iacr.org/2017/212.pdf
+    https://eprint.iacr.org/2017/212.pdf algorithm 3
     """
     r0 = (9, 1)
     x2 = 14847277145635483483963372537557091634710985132825781088887140890597596352251
@@ -133,6 +135,29 @@ def curve25519(k, *, include_y=False):
         else:
             r1, r0 = double_add(r1, r0)
     return recover(r0, r1) if include_y else scale(*r0)
+
+
+def make_secret():
+    # https://cr.yp.to/ecdh.html
+    return randrange(2**251, 2**252) << 3
+
+
+def normalize_secret(x):
+    """
+    Finds the "normalized" secret key, as in the output of make_secret
+    associated to a number modulo ORDER
+
+    Simply solves the system:
+    0 <= k < 2^251
+    output = 8 * (2^251 + k)
+    x = output % ORDER
+    """
+    inv8 = pow(8, ORDER - 2, ORDER)
+    k = (x * inv8 % ORDER - 2**251) % ORDER
+    bit = 1 << 251
+    # the key space has only 2^252 keys and is slightly smaller than ORDER
+    assert not bit & k
+    return (bit | k) << 3
 
 
 if __name__ == "__main__":
