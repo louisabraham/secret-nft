@@ -36,13 +36,15 @@ def _test_zk(use_keccak):
     amount = "10 ether"
 
     verifier = Verifier.deploy({"from": eve})
+    print("Verifier deployment used", verifier.tx.gas_used)
+
     escrow = zkEscrow.deploy(
         verifier.address,
         int_to_u32_array(Public.fingerprint),
         [Public.public_key.p.x.n, Public.public_key.p.y.n],
         {"from": bob, "value": amount},
     )
-    print("Deployment used", escrow.tx.gas_used)
+    print("Escrow deployment used", escrow.tx.gas_used)
     total_gas += escrow.tx.gas_used
 
     Alice.salt = PrivateKey.from_rand()
@@ -78,7 +80,8 @@ def _test_zk(use_keccak):
     # Bob has got the correct secret
     assert Bob.secret == Alice.secret
 
-    print("Total gas", total_gas)
+    print("Total escrow gas", total_gas)
+    print("Total gas", total_gas + verifier.tx.gas_used)
 
 
 def test_zk_sha256():

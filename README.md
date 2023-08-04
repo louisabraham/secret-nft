@@ -15,7 +15,7 @@ The protocols are explained in [this blog post](https://louisabraham.github.io/a
 | Need of a trusted setup           | No                                                     | [Yes](https://zokrates.github.io/toolbox/trusted_setup.html)                           |
 | Need for client-side verification | Yes                                                    | No                                                                                     |
 | Number of messages                | 3 (Alice Bob Alice) when there is no cheating          | 2 (Bob Alice)                                                                          |
-| Gas consumption                   | 1.5M                                                   | 900k                                                                                   |
+| Gas consumption                   | 1.5M                                                   | 1.4M + 900k per use                                                                    |
 | Dependencies                      | None                                                   | ZoKrates                                                                               |
 
 ## Usage
